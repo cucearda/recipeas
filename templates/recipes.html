@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block title %}Recipes{% endblock %}
+
+{% block content %}
+    {% if recipes%}
+    <form name="checked_recipe_list", action="", method="POST">
+        <table class="table is-striped is-fullwidth">
+            {% for recipe_key, recipe in recipes%}
+            <tr>
+                <td>
+                    <a href="{{ url_for('recipe_page', recipe_key = recipe_key) }}">
+                    {{recipe.name}}
+                    </a>
+                </td>
+                <td>
+                    {{recipe.description}}
+                </td>
+                <td>
+                    {{recipe.main_ingridient}}
+                </td>
+                <td>
+                    <input type="checkbox", value="{{recipe_key}}", name="recipe_keys" >
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <button type="submit" class="button is-danger is-small">Delete</button>
+    </form>
+    {% else %}
+    <h1 class="title has-text-warning has-text-weight-bold">NO RECIPEAS YET</h1>
+
+    {% endif %}
+{% endblock %}

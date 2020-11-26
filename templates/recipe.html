@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+
+    <h1 class="title">Movie</h1>
+    <table class="table">
+        <tr>
+            <th>Name: </th>
+            <td>{{ recipe.name }}</td>
+        </tr>
+        <tr>
+            <th>Ingridient:</th>
+            <td> {{recipe.main_ingridient}}</td>
+        </tr>
+        <tr>
+            <th>Description:</th>
+            <td>{{recipe.description}}</td>
+        </tr>
+    </table>
+
+{% endblock %}
