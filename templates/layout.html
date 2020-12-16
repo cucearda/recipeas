@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>My movies - {% block title %}{% endblock %}</title>
+    <title>RECIPEAS-{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
     <link rel="stylesheet"
           href="{{ url_for('static', filename='mymovies.css') }}"/>
@@ -10,13 +10,20 @@
 
   <body>
     <header>
-      <nav class="navbar">
-        <div class="navbar-menu" id="nav-links">
+      <nav class="navbar is-link">
+        <div class="navbar-brand">
+          <a href="{{ url_for('home_page') }}">LOGO</a>
+        </div>
+        <div class="navbar-menu " id="nav-links">
           <span class="navbar-item">
             <a class="navbar-item button is-link" href="{{ url_for('home_page') }}">Home</a>
           </span>
           <span class="navbar-item">
-            <a class="navbar-item button is-link" href="{{ url_for('recipes_page') }}">List movies</a>
+            <a class="navbar-item button is-link" href="{{ url_for('recipes_page') }}">Recipeas</a>
+          </span>
+
+          <span class="navbar-item">
+            <a class="navbar-item button is-link" href="{{ url_for('discussions_page') }}">Forum</a>
           </span>
         </div>
       </nav>
@@ -29,7 +36,7 @@
 </section>
 
     <footer>
-      <small>&copy; 2015-2018, Kilgore Trout</small>
+      <small>&copy; 2020, Arda Cüce</small>
     </footer>
   </body>
 </html>

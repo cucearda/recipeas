@@ -17,3 +17,14 @@ def recipe_page(recipe_key):
     db = current_app.config["db"]
     recipe = db.get_recipe(recipe_key)
     return render_template("recipe.html", recipe = recipe)
+
+def discussions_page():
+    db = current_app.config["db"]
+    if request.method == "GET":
+        discussions = db.get_discussions()
+    return render_template("discussions.html", discussions = sorted(discussions))
+
+def discussion_page(discussion_key):
+    db = current_app.config["db"]
+    discussion = db.get_discussion(discussion_key)
+    return render_template("discussion.html", discussion = discussion)

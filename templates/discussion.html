@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block title %}Discussion{% endblock %}
+{% block content %}
+
+    <h1 class="title">{{ discussion.header }}</h1>
+    <table class="table">
+        <tr>
+            <td> {{discussion.content}}</td>
+        </tr>
+        <tr>
+            <td align="right"><input type="button" class="button is-danger" value="Dislike">
+            <input type="button" class="button is-success" value="Like"></td>
+        </tr>
+
+    </table>
+
+        <h2>Comments</h2>
+        {% for comment in discussion.comments %}
+            <table>
+                <tr><td>{{ comment.content }}</td></tr>
+                <tr><td>{{ comment.user }}</td>
+                    <td align="right"><input type="button" class="button is-danger is-small" value="Dislike">
+                    <input type="button" class="button is-success is-small" value="Like"></td>
+                </tr>
+
+            </table>
+        {% endfor %}
+
+
+{% endblock %}
