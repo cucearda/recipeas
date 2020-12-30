@@ -1,10 +1,13 @@
 from recipe import Recipe
 from discussion import Discussion
+from ingredient import Ingredient
 
 class Database:
     def __init__(self):
         self.recipes = {}
         self.discussions = {}
+        self.ingredients = {}
+        self._last_ingredient_key = 0
         self._lats_recipe_key = 0
         self._last_discussion_key = 0
 
@@ -38,6 +41,11 @@ class Database:
         self._last_discussion_key += 1
         return (self._last_discussion_key)
 
+    def add_ingredient(self, ingredient):
+        self.ingredients[self._last_ingredient_key] = ingredient
+        self._last_ingredient_key += 1
+        return (self._last_ingredient_key)
+
     def delete_discussion (self, discussion_key):
         if discussion_key in self.discussions:
             del self.discussions[discussion_key]
@@ -57,3 +65,10 @@ class Database:
             discussion_ = Discussion(discussion.user, discussion.content, discussion.likes, discussion.comments, discussion.header)
             discussions.append((discussion_key, discussion_))
         return discussions
+
+    def get_ingredients(self):
+        ingredients = []
+        for ingredient_key, ingredient in self.ingredients.items():
+            ingredient_ = Ingredient(ingredient.name)
+            ingredients.append((ingredient_key, ingredient_))
+        return ingredients

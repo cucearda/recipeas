@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block title %}Recipe{% endblock %}
+{% block content %}
+
+{% if ingredients%}
+<form action="" method="post" name="discussion_post">
+    <label class="label">Title</label>
+    <div class="control">
+      <input class="input" name="title" type="text" placeholder="Keep it under 30 characters" required="required" maxlength="30">
+    </div>
+
+    <div class="field">
+        <label class="label">Body</label>
+        <div class="control">
+          <textarea class="textarea" name ="content" placeholder="Talk about food or anything!" required="required"></textarea>
+        </div>
+    </div>
+
+
+
+    <div class="select is-multiple">
+      <select multiple size="8">
+        {% for ingredient_key, ingredient in ingredients %}
+        <option value="{{ingredient_key}}">{{ingredient.name}}</option>
+        {% endfor %}    
+      </select>
+    </div>
+    
+    <div class="field is-grouped">
+      <div class="control">
+        <button class="button is-primary is-small">Save</button>
+      </div>
+    </div>
+
+</form>
+{% else %}
+  <h1>CREATE SOME INGREDIENTS FIRST</h1>
+{% endif %}
+{% endblock %}

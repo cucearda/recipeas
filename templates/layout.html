@@ -9,22 +9,56 @@
   </head>
 
   <body>
-    <header>
-      <nav class="navbar is-link">
-        <div class="navbar-brand">
-          <a href="{{ url_for('home_page') }}">LOGO</a>
-        </div>
-        <div class="navbar-menu " id="nav-links">
-          <span class="navbar-item">
-            <a class="navbar-item button is-link" href="{{ url_for('home_page') }}">Home</a>
-          </span>
-          <span class="navbar-item">
-            <a class="navbar-item button is-link" href="{{ url_for('recipes_page') }}">Recipeas</a>
-          </span>
 
-          <span class="navbar-item">
-            <a class="navbar-item button is-link" href="{{ url_for('discussions_page') }}">Forum</a>
-          </span>
+      <nav class="navbar is-success" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+          <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+      
+        <div id="navbarBasicExample" class="navbar-menu">
+          <div class="navbar-start">
+            <a class="navbar-item" href="{{ url_for('home_page') }}">
+              Home
+            </a>
+      
+            <a class="navbar-item" href="{{ url_for('recipes_page') }}">
+              Recipeas
+            </a>
+            <a class="navbar-item" href="{{ url_for('discussions_page') }}">
+              Forum
+            </a>
+            <div class="navbar-item has-dropdown is-hoverable">
+              <a class="navbar-link">
+                Create
+              </a>
+      
+              <div class="navbar-dropdown">
+                <a class="navbar-item" href="{{ url_for('create_post_page') }}">
+                  Forum Post
+                </a>
+                <a class="navbar-item" href ="{{ url_for('create_recipe_page') }}">
+                  Recipea
+                </a>
+              </div>
+            </div>
+          </div>
+      
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="buttons">
+                <a class="button is-primary" href="{{ url_for('signup_page' )}}">
+                  <strong>Sign up</strong>
+                </a>
+                <a class="button is-light">
+                  Log in
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </nav>
     </header>

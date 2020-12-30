@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block title %}Discussion{% endblock %}
+{% block content %}
+
+<form action="" method="post" name="discussion_post">
+    <label class="label">User Name</label>
+    <div class="control">
+      <input class="input" name="username" type="text" placeholder="Keep it under 10 chars" required="required" maxlength="10">
+    </div>
+
+    <div class="field">
+        <label class="label">Password</label>
+        <div class="control">
+          <input class="input" name ="password" required="required">
+        </div>
+    </div>
+    <div class="field is-grouped">
+      <div class="control">
+        <button class="button is-primary is-small">Sign-up</button>
+      </div>
+    </div>
+
+</form>
+{% endblock %}
