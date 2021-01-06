@@ -3,7 +3,8 @@ from flask_login import UserMixin
 import psycopg2
 
 class User(UserMixin):
-    def __init__(self, username, password):
+    def __init__(self, userid,username, password):
+        self.userid = userid
         self.username = username
         self.password = password
         self.active = True
@@ -17,11 +18,18 @@ class User(UserMixin):
         return self.active
 
 
-def get_user(user_id):
+def get_user(user_name):
     conn = psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda")
     cur = conn.cursor()
-    password = current_app.config["PASSWORDS"].get(user_id)
-    user = User(user_id, password) if password else None
+    cur.execute("""SELECT * FROM  users 
+                WHERE username= (%s)""", (user_name,))
+    tup = cur.fetchone()
+    
+    user = User(tup[0], tup[1], tup[2]) if tup else None
     if user is not None:
-        user.is_admin = user.username in current_app.config["ADMIN_USERS"]
+        return user
+        
+    else:
+        print("USER NOT FOUND")
+    
     return user

@@ -49,14 +49,21 @@
       
           <div class="navbar-end">
             <div class="navbar-item">
+              {% if not current_user.is_authenticated %}
               <div class="buttons">
-                <a class="button is-primary" href="{{ url_for('signup_page' )}}">
+                <a class="button is-primary" href="{{ url_for('signup_page') }}">
                   <strong>Sign up</strong>
                 </a>
-                <a class="button is-light">
+                <a class="button is-light" href="{{ url_for('login_page') }}">
                   Log in
                 </a>
               </div>
+              {% else %}
+                <a class="button is-warning" href="{{ url_for('logout_page') }}">
+                  Log out
+                </a>
+              {% endif%}
+            
             </div>
           </div>
         </div>
@@ -70,7 +77,10 @@
 </section>
 
     <footer>
-      <small>&copy; 2020, Arda Cüce</small>
+      {% for message in get_flashed_messages() %}
+      <div class="notification is-primary">{{ message }}</div>
+      {% endfor %}
+
     </footer>
   </body>
 </html>
