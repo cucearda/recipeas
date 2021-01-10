@@ -31,24 +31,11 @@ def create_app():
     app.add_url_rule("/signup", view_func=view.signup_page, methods = ["POST","GET"])
     app.add_url_rule("/login", view_func=view.login_page, methods=["POST", "GET"])
     app.add_url_rule("/logout", view_func=view.logout_page)
+    app.add_url_rule("/create_ingredient", view_func=view.create_ingredient_page, methods=["POST", "GET"])
+    app.add_url_rule("/create_tool", view_func= view.create_tool_page, methods = ["POST", "GET"])
 
-
-
+   
     db = Database()
-    db.add_recipe(Recipe("Shakshuka", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure", "Patates"))
-    db.add_recipe(Recipe("Humus", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure", "Nohut"))
-    db.add_ingredient(Ingredient("Nohut"))
-    db.add_ingredient(Ingredient("Pirinc"))
-    db.add_ingredient(Ingredient("Bezelye"))
-
-    comment1 = Comment("Arda", 15, "lorem ipsum sit amet")
-    comment2 = Comment("Ismail", -1, "lorem ipsum sit amet")
-    comment_list = [comment1, comment2]
-    first_diss = Discussion("John Doe", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure", 12, comment_list, "Lorem ipsum dolor")
-    db.add_discussion(first_diss)
-    comment_list_empty = []
-    second_diss = Discussion("Jane Doe", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure", 0, comment_list_empty, "Excepteur sint occaecat cupidatat")
-    db.add_discussion(second_diss)
     app.config["db"] = db
 
     lm.init_app(app)

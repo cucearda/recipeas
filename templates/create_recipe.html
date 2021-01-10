@@ -2,14 +2,16 @@
 {% block title %}Recipe{% endblock %}
 {% block content %}
 
-{% if ingredients%}
+{% if ingredients and tools%}
 <form action="" method="post" name="discussion_post">
-    <label class="label">Title</label>
-    <div class="control">
-      <input class="input" name="title" type="text" placeholder="Keep it under 30 characters" required="required" maxlength="30">
+    
+    <div class="field is-half">
+      <label class="label">Title</label>
+      <div class="control">
+        <input class="input" name="title" type="text" placeholder="Keep it under 30 characters" required="required" maxlength="30">
+      </div>
     </div>
-
-    <div class="field">
+    <div class="field is-half">
         <label class="label">Body</label>
         <div class="control">
           <textarea class="textarea" name ="content" placeholder="Talk about food or anything!" required="required"></textarea>
@@ -17,23 +19,35 @@
     </div>
 
 
-
-    <div class="select is-multiple">
-      <select multiple size="8">
-        {% for ingredient_key, ingredient in ingredients %}
-        <option value="{{ingredient_key}}">{{ingredient.name}}</option>
-        {% endfor %}    
-      </select>
-    </div>
+    <div class="field columns is-gapless">
+      
+      <div class="select is-multiple column is-one-fifth">
+        <label class="label">Ingredients:</label>
+        <select name="ingredient_ids" id="ingredient_ids" multiple size="8">
+          {% for ingredient in ingredients %}
+          <option value="{{ingredient[0]}}">{{ingredient[1]}}</option>
+          {% endfor %}    
+        </select>
+      </div>
+      <div class="select is-multiple column">
+        <label class="label">Tools:</label>
+        <select name="tool_ids" id = "tool_ids" multiple size="8">
+          {% for tool in tools %}
+          <option value="{{tool[0]}}">{{tool[1]}}</option>
+          {% endfor %}    
+        </select>
+      </div>
+      
+    </div> 
     
-    <div class="field is-grouped">
+    <div class="field is-grouped is-grouped-centered">
       <div class="control">
-        <button class="button is-primary is-small">Save</button>
+          <button class="button is-primary is-small">Save</button>
       </div>
     </div>
 
 </form>
 {% else %}
-  <h1>CREATE SOME INGREDIENTS FIRST</h1>
+  <h1>CREATE SOME INGREDIENTS AND TOOLS FIRST</h1>
 {% endif %}
 {% endblock %}

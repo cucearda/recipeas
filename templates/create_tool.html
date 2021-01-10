@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block title %}Discussion{% endblock %}
+{% block content %}
+
+<form action="" method="post" name="discussion_post">
+    <label class="label">Name of Tool</label>
+    <div class="control">
+      <input class="input" name="tool" type="text" placeholder="Try shredder!" required="required" maxlength="10">
+    </div>
+
+    <div class="field is-grouped">
+      <div class="control">
+        <button class="button is-primary is-small">Commit</button>
+      </div>
+    </div>
+
+</form>
+{% endblock %}

@@ -1,74 +1,97 @@
 from recipe import Recipe
 from discussion import Discussion
 from ingredient import Ingredient
+import user
+import psycopg2
+import datetime
 
 class Database:
     def __init__(self):
-        self.recipes = {}
-        self.discussions = {}
-        self.ingredients = {}
-        self._last_ingredient_key = 0
-        self._lats_recipe_key = 0
-        self._last_discussion_key = 0
+        pass
 
-    def add_recipe(self, recipe):
-        self.recipes[self._lats_recipe_key] = recipe
-        self._lats_recipe_key += 1
-        return (self._lats_recipe_key)
+    def add_user(self, username, hashed, nickname, karma, date):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            if( not user.get_user(username) ):
+                cur.execute("INSERT INTO users (username, password, nickname, register_date, karma) VALUES (%s, %s, %s, %s, %s)", (username, hashed, nickname, date, karma))
+                conn.commit()
+                return True
+            else:
+                return False
+
+    def add_ingredient(self, ingredient_name):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("""SELECT * FROM ingredients WHERE ingredient_name= (%s) """, (ingredient_name,))
+
+            ingredient_existance = cur.fetchone()
+
+            if(ingredient_existance):
+                return False
+            else:
+                cur.execute("""INSERT INTO ingredients (ingredient_name) VALUES (%s) """, (ingredient_name,))
+                conn.commit()
+                return True
+
+    def add_tool(self, tool_name):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+
+            cur.execute("SELECT * FROM tools WHERE tool_name= (%s)", (tool_name,))
+
+            tool_existance = cur.fetchone()
+            if(tool_existance):
+                return False
+            else:
+                cur.execute("INSERT INTO tools (tool_name) VALUES (%s)", (tool_name,))
+                conn.commit()
+                return True
     
-    def delete_recipe (self, recipe_key):
-        if recipe_key in self.recipes:
-            del self.recipes[recipe_key]
-        else:
-            print("CAN'T DELETE RECIPE, KEY NOT FOUND")
-        
-    def get_recipe(self, recipe_key):
-        recipe = self.recipes.get(recipe_key)
-        if recipe is None:
-            return None
-        recipe_ = Recipe(recipe.name, recipe.description, recipe.main_ingridient)
-        return recipe_
-        
-    def get_recipes(self):
-        recipes = []
-        for recipe_key, recipe in self.recipes.items():
-            recipe_ = Recipe(recipe.name, recipe.description, recipe.main_ingridient)
-            recipes.append((recipe_key, recipe_))
-        return recipes
-
-    def add_discussion(self, discussion):
-        self.discussions[self._last_discussion_key] = discussion
-        self._last_discussion_key += 1
-        return (self._last_discussion_key)
-
-    def add_ingredient(self, ingredient):
-        self.ingredients[self._last_ingredient_key] = ingredient
-        self._last_ingredient_key += 1
-        return (self._last_ingredient_key)
-
-    def delete_discussion (self, discussion_key):
-        if discussion_key in self.discussions:
-            del self.discussions[discussion_key]
-        else:
-            print("CAN'T DELETE DISCUSSION, KEY NOT FOUND")
-
-    def get_discussion(self, discussion_key):
-        discussion = self.discussions.get(discussion_key)
-        if discussion is None:
-            return None
-        discussion_ = Discussion(discussion.user, discussion.content, discussion.likes, discussion.comments, discussion.header)
-        return discussion_
-
-    def get_discussions(self):
-        discussions = []
-        for discussion_key, discussion in self.discussions.items():
-            discussion_ = Discussion(discussion.user, discussion.content, discussion.likes, discussion.comments, discussion.header)
-            discussions.append((discussion_key, discussion_))
-        return discussions
-
     def get_ingredients(self):
-        ingredients = []
-        for ingredient_key, ingredient in self.ingredients.items():
-            ingredient_ = Ingredient(ingredient.name)
-            ingredients.append((ingredient_key, ingredient_))
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+
+            cur.execute("SELECT * FROM ingredients")
+            ingredients = cur.fetchall()
         return ingredients
+
+    def get_tools(self):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+
+            cur.execute("SELECT * FROM tools")
+            tools = cur.fetchall()
+        return tools
+
+    def create_recipe(self, body, title, ingredient_ids, tool_ids, current_user_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("INSERT INTO recipes (title, content, user_id, triedcount, likecount, ingredientcount) VALUES (%s, %s, %s, 0, 0, 0) RETURNING id;", (title, body, current_user_id))
+            recipe_id = cur.fetchone()
+
+            for ingredient_id in ingredient_ids:
+                cur.execute("INSERT INTO ingredient_mapper (ingredient_id, recipe_id) VALUES (%s, %s)", (ingredient_id, recipe_id))
+
+            for tool_id in  tool_ids:
+                cur.execute("INSERT INTO tool_mapper (tool_id, recipe_id) VALUES (%s, %s)", (tool_id, recipe_id))
+
+            cur.execute("SELECT COUNT(ingredient_id) FROM ingredient_mapper WHERE recipe_id = %s", (recipe_id,))
+            ing_count = cur.fetchone()
+            cur.execute("UPDATE recipes SET ingredientcount= %s WHERE id = %s", (ing_count ,recipe_id))
+
+            conn.commit()
+
+    def get_recipes(self):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM recipes")
+            recipes_list = []
+            while True:
+                tup = cur.fetchone()
+                if tup == None:
+                    break
+                recipe = Recipe(tup[0], tup[1], tup[2], tup[3], tup[4], tup[5], tup[6])
+                recipes_list.append(recipe)       
+            return recipes_list
+
+

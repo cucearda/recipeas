@@ -4,7 +4,7 @@ from datetime import datetime
 from passlib.hash import pbkdf2_sha256 as hasher
 import user
 import psycopg2
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 
 def home_page():
     today = datetime.today()
@@ -15,7 +15,7 @@ def recipes_page():
     db = current_app.config["db"]
     if request.method == "GET":
         recipes = db.get_recipes()
-    return render_template("recipes.html", recipes=sorted(recipes))  
+    return render_template("recipes.html", recipes=recipes)  
 
 def recipe_page(recipe_key):
     db = current_app.config["db"]
@@ -49,25 +49,35 @@ def create_post_page():
 def create_recipe_page():
     db = current_app.config["db"]
     ingredients = db.get_ingredients()
+    tools = db.get_tools()
     if request.method == "GET":
-        return render_template("create_recipe.html", ingredients = ingredients)
+        return render_template("create_recipe.html", ingredients = ingredients, tools = tools)
     else:
+        ingredient_ids = request.form.getlist('ingredient_ids')
+        tool_ids = request.form.getlist('tool_ids')
+        body = request.form["content"]
+        title = request.form["title"]
+        db.create_recipe(body, title, ingredient_ids, tool_ids, current_user.userid)
         return render_template("home.html")
 
 def signup_page():
-    conn = psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda")
-    cur = conn.cursor()
+    db = current_app.config["db"]
     if request.method == "GET":
         return render_template("signup_page.html")
     else:
         username = request.form["username"]
         password = request.form["password"]
+        nickname = request.form["nickname"]
         hashed = hasher.hash(password)
-        cur.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed))
-        conn.commit()
-        return render_template("home.html")
-    cur.close()
-    conn.close()
+        karma = 0
+        date = datetime.now()
+        if(db.add_user(username, hashed, nickname, karma, date)):
+            flash("Registired")
+            return redirect(url_for('login_page'))
+        else:
+            flash("Username already exists.")
+            return render_template("signup_page.html")
+
 
 def login_page():
 
@@ -93,3 +103,30 @@ def logout_page():
     logout_user()
     flash("Goodbye")
     return redirect(url_for("home_page"))
+
+def create_ingredient_page():
+    if request.method == "GET":
+        return render_template("create_ingredient.html")
+    
+    else:
+        db = current_app.config["db"]
+        entered_ingredient = request.form["ingredient"]
+        if(db.add_ingredient(entered_ingredient)):
+            flash("Ingredient added to database")
+        else:
+            flash("Ingredient already exists")
+        return render_template("create_ingredient.html")
+
+def create_tool_page():
+    if request.method == "GET":
+        return render_template("create_tool.html")
+
+    else:
+        db=current_app.config["db"]
+        entered_tool = request.form["tool"]
+        if(db.add_tool(entered_tool)):
+            flash("Tool added to database")
+        else:
+            flash("Tool already exists")
+        return render_template("create_tool.html")
+
