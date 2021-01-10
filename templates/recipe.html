@@ -1,20 +1,70 @@
 {% extends "layout.html" %}
 {% block title %}Home{% endblock %}
 {% block content %}
+<article class="media">
+    <div class="media-content">
+      <div class="content">
+        <p>
+          <h class= "title"><strong>{{recipe.title}}</strong></h><small><a href=""> @{{ recipe.creator.nickname }}</a></small>
+          <br>
+          <div class="columns">
+            <section class="column">
+              <h5>Ingredients</h5>
+              <ul class="block-list is-small is-left">
+             {%for ingredient in ingredients%}
+                <li>{{ingredient[0]}}</li>
+             {%endfor%}
+              </ul>
+            </section>
+            <section class="column">
+              <h5>Tools</h5>
+              <ul class="block-list is-small">
+              {%for tool in tools%}
+                <li>{{tool[0]}}</li>
+              {%endfor%}
+            </ul>
+            </section>
+          </div>
+          <br>
+          {{recipe.description}}
+        </p>
 
-    <h1 class="title">Movie</h1>
-    <table class="table">
-        <tr>
-            <th>Name: </th>
-            <td>{{ recipe.name }}</td>
-        </tr>
-        <tr>
-            <th>Ingridient:</th>
-            <td> {{recipe.main_ingridient}}</td>
-        </tr>
-        <tr>
-            <th>Description:</th>
-            <td>{{recipe.description}}</td>
-        </tr>
-    </table>
+      </div>
+
+
+      {% if current_user.is_active %}
+      <nav class="level is-mobile">
+        <div class="level-left">
+          <a class="level-item">
+            <a class="button {% if prev_vote == 1 %} is-light{% else %} is-success {% endif %}" href="{{ url_for('vote_recipe_page', recipe_id = recipe.recipe_id, vote_type = 1) }}">
+                Like
+            </a>
+          </a>
+          <a class="level-item">
+            <a class="button {% if prev_vote == -1 %} is-light{% else %} is-danger {% endif %}" href="{{ url_for('vote_recipe_page', recipe_id = recipe.recipe_id, vote_type = 2) }}">
+                Dislike
+            </a>
+          </a>
+        </div>
+
+        <div class="level-left">
+            {% if not tried %}          
+            <a class="level-item">
+                <a class="button is-warning" href="{{ url_for('tried_page', recipe_id=recipe.recipe_id) }}">
+                    Mark Tried
+                </a>
+            </a>
+            {% else %}
+            <a class="level-item">
+                <a class="button is-light" href="{{ url_for('tried_page', recipe_id=recipe.recipe_id) }}">
+                    Unmark Tried
+                </a>
+            </a>
+            {% endif %}
+        </div>
+      </nav>
+      {% endif %}
+    </div>
+
+  </article>
 {% endblock %}

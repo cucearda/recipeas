@@ -17,10 +17,14 @@ def recipes_page():
         recipes = db.get_recipes()
     return render_template("recipes.html", recipes=recipes)  
 
-def recipe_page(recipe_key):
+def recipe_page(recipe_id):
     db = current_app.config["db"]
-    recipe = db.get_recipe(recipe_key)
-    return render_template("recipe.html", recipe = recipe)
+    recipe = db.get_recipe(recipe_id)
+    tried = db.check_tried(recipe_id, current_user.userid)
+    tools = db.get_recipe_tools(recipe_id)
+    ingredients = db.get_recipe_ingredients(recipe_id)
+    prev_vote = db.check_like_dislike(recipe_id, current_user.userid)
+    return render_template("recipe.html", recipe = recipe, tried=tried, tools = tools, ingredients = ingredients, prev_vote = prev_vote)
 
 def discussions_page():
     db = current_app.config["db"]
@@ -57,6 +61,9 @@ def create_recipe_page():
         tool_ids = request.form.getlist('tool_ids')
         body = request.form["content"]
         title = request.form["title"]
+        if not tool_ids or not ingredient_ids:
+            flash("Choose some tools and ingredients!")
+            return redirect(url_for('create_recipe_page'))
         db.create_recipe(body, title, ingredient_ids, tool_ids, current_user.userid)
         return render_template("home.html")
 
@@ -130,3 +137,22 @@ def create_tool_page():
             flash("Tool already exists")
         return render_template("create_tool.html")
 
+def tried_page(recipe_id):
+    db = current_app.config["db"]
+    if db.check_tried(recipe_id, current_user.userid):
+        db.remove_tried(recipe_id, current_user.userid)
+    else:
+        db.add_tried(recipe_id, current_user.userid)
+    db.update_recipe_counts(recipe_id)
+    return redirect(url_for('recipe_page', recipe_id = recipe_id))
+
+def vote_recipe_page(recipe_id, vote_type):
+    db = current_app.config["db"]
+    if vote_type  == 2:
+        vote_type = -1
+    prev_vote = db.check_like_dislike(recipe_id, current_user.userid)
+    db.vote_recipe(recipe_id, current_user.userid, vote_type, prev_vote)
+    db.update_recipe_counts(recipe_id)
+    flash("Vote registered")
+    return redirect(url_for('recipe_page', recipe_id = recipe_id))
+    

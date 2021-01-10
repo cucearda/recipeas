@@ -16,7 +16,7 @@
             {% for recipe in recipes%}
             <tr>
                 <td>
-                    <a href="/">
+                    <a href="{{url_for('recipe_page', recipe_id = recipe.recipe_id)}}">
                     {{recipe.title}}
                     </a>
                 </td>

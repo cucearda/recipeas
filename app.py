@@ -23,7 +23,7 @@ def create_app():
     app = Flask(__name__)
     app.add_url_rule("/", view_func=view.home_page)
     app.add_url_rule("/recipes", view_func=view.recipes_page,  methods = ["GET", "POST"])
-    app.add_url_rule("/recipes/<int:recipe_key>", view_func = view.recipe_page)
+    app.add_url_rule("/recipes/<int:recipe_id>", view_func = view.recipe_page)
     app.add_url_rule("/discussions", view_func= view.discussions_page)
     app.add_url_rule("/discussion/<int:discussion_key>", view_func = view.discussion_page)
     app.add_url_rule("/create_post", view_func= view.create_post_page, methods =["GET", "POST"])
@@ -33,7 +33,8 @@ def create_app():
     app.add_url_rule("/logout", view_func=view.logout_page)
     app.add_url_rule("/create_ingredient", view_func=view.create_ingredient_page, methods=["POST", "GET"])
     app.add_url_rule("/create_tool", view_func= view.create_tool_page, methods = ["POST", "GET"])
-
+    app.add_url_rule("/tried/<int:recipe_id>", view_func = view.tried_page)
+    app.add_url_rule("/recipes/<int:recipe_id>/<int:vote_type>", view_func = view.vote_recipe_page)
    
     db = Database()
     app.config["db"] = db
@@ -53,4 +54,4 @@ if __name__ == "__main__":
     app = create_app()
     app.secret_key = 'super secret key'
     app.debug = True
-    app.run(host="0.0.0.0", port=8086, debug=True)
+    app.run(host="0.0.0.0", port=8082, debug=True)
