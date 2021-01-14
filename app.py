@@ -33,7 +33,8 @@ def create_app():
     app.add_url_rule("/create_tool", view_func= view.create_tool_page, methods = ["POST", "GET"])
     app.add_url_rule("/tried/<int:recipe_id>", view_func = view.tried_page)
     app.add_url_rule("/recipes/<int:recipe_id>/<int:vote_type>", view_func = view.vote_recipe_page)
-   
+    app.add_url_rule("/post/<int:post_id>/<int:vote_type>", view_func=view.vote_post_page)
+    app.add_url_rule("/post/<int:comment_id>+<int:post_id>/<int:vote_type>", view_func=view.vote_comment_page)
     db = Database()
     app.config["db"] = db
 

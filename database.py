@@ -112,7 +112,7 @@ class Database:
     def get_post_comments(self, post_id):
         with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
             cur = conn.cursor()
-            cur.execute("SELECT * FROM comments WHERE post_id = %s", (post_id,))
+            cur.execute("SELECT * FROM comments WHERE post_id = %s ORDER BY id DESC", (post_id,))
             comments = []
             while True:
                 tup = cur.fetchone()
@@ -136,7 +136,34 @@ class Database:
             cur.execute("UPDATE posts SET commentcount = %s WHERE id= %s", (comment_count, post_id))
             conn.commit()
 
+    def vote_post(self, post_id, user_id, vote_type, prev_vote): # This removes, creates and updates votes all together
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            if prev_vote == 0:
+                cur.execute("INSERT INTO post_votes (vote_type, user_id, post_id) VALUES (%s, %s, %s)", (vote_type, user_id, post_id))
+            elif prev_vote == vote_type:
+                cur.execute("DELETE FROM post_votes WHERE vote_type = %s AND  user_id = %s AND post_id = %s", (vote_type, user_id, post_id))
+            else:
+                cur.execute("UPDATE post_votes SET vote_type = %s WHERE user_id = %s AND post_id = %s", (vote_type, user_id, post_id))
 
+    def check_post_like_dislike(self, post_id, user_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM post_votes WHERE post_id = %s AND user_id = %s", (post_id, user_id))        
+            tup = cur.fetchone()
+            if tup:
+                return tup[0] # 0th row is vote type 1 if like -1 if dislike
+            else:
+                return 0 # return 0 if vote doesn't exist
+
+    def update_post_like_counts(self, post_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT SUM(vote_type) FROM post_votes WHERE post_id = %s ", (post_id,))        
+            like_count = cur.fetchone()[0]
+            if like_count== None:
+                like_count = 0 
+            cur.execute("UPDATE posts SET likecount = %s WHERE id = %s",(like_count, post_id))
     def get_recipes(self):
         with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
             cur = conn.cursor()
@@ -192,8 +219,6 @@ class Database:
                 tools.append(cur.fetchone())
             return tools
 
-
-
     def check_tried(self, recipe_id, user_id):
         with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
             cur = conn.cursor()
@@ -215,7 +240,7 @@ class Database:
             cur.execute("DELETE FROM tried WHERE recipe_id = %s AND user_id = %s", (recipe_id, user_id))
             conn.commit()
 
-    def check_like_dislike(self, recipe_id, user_id):
+    def check_recipe_like_dislike(self, recipe_id, user_id):
         with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
             cur = conn.cursor()
             cur.execute("SELECT * FROM recipe_votes WHERE recipe_id = %s AND user_id = %s", (recipe_id,user_id))
@@ -238,3 +263,34 @@ class Database:
             else:
                 cur.execute("UPDATE recipe_votes SET vote_type = %s WHERE user_id = %s AND recipe_id = %s", (vote_type, user_id, recipe_id))
                 conn.commit()
+    def vote_comment(self, comment_id, user_id, vote_type, prev_vote):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            if prev_vote == 0:
+                cur.execute("INSERT INTO comment_votes (vote_type, user_id, comment_id) VALUES (%s, %s, %s)", (vote_type, user_id, comment_id))
+                conn.commit()
+            elif prev_vote == vote_type:
+                cur.execute("DELETE FROM comment_votes WHERE vote_type = %s AND user_id = %s AND comment_id = %s", (vote_type, user_id, comment_id))
+                conn.commit()
+            else:
+                cur.execute("UPDATE comment_votes SET vote_type = %s WHERE user_id = %s AND comment_id = %s", (vote_type, user_id, comment_id ))
+                conn.commit()
+                
+    def check_comment_like_dislike(self, comment_id, user_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM comment_votes WHERE comment_id = %s AND user_id = %s", (comment_id ,user_id))
+            tup = cur.fetchone()
+            if tup:
+                return tup[0] # return 1 if upvote -1 if downvote
+            else:
+                return 0 # return 0 if vote doesn't exist      
+
+    def update_comment_like_counts(self, comment_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT SUM(vote_type) FROM comment_votes WHERE comment_id = %s ", (comment_id,))        
+            like_count = cur.fetchone()[0]
+            if like_count== None:
+                like_count = 0 
+            cur.execute("UPDATE comments SET likecount = %s WHERE id = %s",(like_count, comment_id))          

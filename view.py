@@ -24,7 +24,7 @@ def recipe_page(recipe_id):
     tried = db.check_tried(recipe_id, current_user.userid)
     tools = db.get_recipe_tools(recipe_id)
     ingredients = db.get_recipe_ingredients(recipe_id)
-    prev_vote = db.check_like_dislike(recipe_id, current_user.userid)
+    prev_vote = db.check_recipe_like_dislike(recipe_id, current_user.userid)
     return render_template("recipe.html", recipe = recipe, tried=tried, tools = tools, ingredients = ingredients, prev_vote = prev_vote)
 
 def posts_page():
@@ -161,11 +161,32 @@ def tried_page(recipe_id):
 
 def vote_recipe_page(recipe_id, vote_type):
     db = current_app.config["db"]
-    if vote_type  == 2:
-        vote_type = -1
-    prev_vote = db.check_like_dislike(recipe_id, current_user.userid)
+    if vote_type  == 2: # we can't send negative integers through url so we send 2 and translate it to -1
+        vote_type = -1 
+    prev_vote = db.check_recipe_like_dislike(recipe_id, current_user.userid)
     db.vote_recipe(recipe_id, current_user.userid, vote_type, prev_vote)
     db.update_recipe_counts(recipe_id)
     flash("Vote registered")
     return redirect(url_for('recipe_page', recipe_id = recipe_id))
     
+def vote_post_page(post_id, vote_type):
+    db = current_app.config["db"]
+    if vote_type == 2:
+        vote_type = -1
+    
+    prev_vote = db.check_post_like_dislike(post_id, current_user.userid)
+    db.vote_post(post_id, current_user.userid, vote_type, prev_vote)
+    db.update_post_like_counts(post_id)
+    flash("Vote registered")
+    return redirect(url_for('post_page', post_id= post_id))
+
+def vote_comment_page(post_id, comment_id, vote_type):
+    db = current_app.config["db"]
+    if vote_type == 2:
+        vote_type = -1
+
+    prev_vote = db.check_comment_like_dislike(comment_id, current_user.userid)
+    db.vote_comment(comment_id, current_user.userid, vote_type, prev_vote)
+    db.update_comment_like_counts(comment_id)
+    flash("Vote registered")
+    return redirect(url_for('post_page', post_id = post_id))

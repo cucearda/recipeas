@@ -3,7 +3,8 @@
 {% block content %}
 
 <article class="media">
-    
+  <figure class="media-left">
+  </figure>
     <div class="media-content">
       <div class="content">
         <p>
@@ -11,12 +12,14 @@
           <br>
           {{post.content}}
           <br>
-          <small><a>Like</a>· {{post.likecount}} · <a>Reply</a> · {{post.postdate}}</small>
+          <small><a href="{{url_for('vote_post_page', post_id = post.post_id, vote_type = 1)}}">Like</a> · <a href="{{url_for('vote_post_page', post_id = post.post_id, vote_type = 2)}}">Dislike</a>  · {{post.likecount}} · <a>Reply</a> · {{post.postdate}}</small>
         </p>
       </div>
       <br>
       {% for comment in comments%}
       <article class="media">
+        <figure class="media-left">
+        </figure>
         <div class="media-content">
           <div class="content">
             <p>
@@ -24,14 +27,14 @@
               <br>
                 {{comment.content}}
               <br>
-              <small><a>Like</a> · {{comment.likecount}} · </small>
+              <small><a href="{{url_for('vote_comment_page', post_id = post.post_id, comment_id = comment.id, vote_type = 1)}}">Like</a> <a href="{{url_for('vote_comment_page', post_id = post.post_id, comment_id = comment.id, vote_type = 2)}}">Dislike</a> · {{comment.likecount}} · </small>
             </p>
           </div>
         </div>
       </article>
       {% endfor %}
     </div>
-  </article>
+</article>
 
   <br>
   <form action=""  method = "post" name ="comment">
