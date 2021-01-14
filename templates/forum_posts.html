@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block title %}Forum{% endblock %}
+
+{% block content %}
+    {% if posts%}
+        <table class="table is-striped is-fullwidth">
+            <thead>
+                <tr>
+                    <th><abbr title="Title">Title</abbr></th>
+                    <th><abbr title="Like-Dislike">Like-Dislike</abbr></th>
+                    <th><abbr title="Comment Count">Comment Count</abbr></th>
+                    <th><abbr title="Post Date">Post Date</abbr></th>
+                    <th><abbr title="Creator">Creator</abbr></th>
+                </tr>
+            </thead>
+            {% for post in posts%}
+            <tr>
+                <td>
+                    <a href="{{url_for('post_page', post_id = post.post_id)}}">
+                    {{post.title}}
+                    </a>
+                </td>
+                <td>
+                    {{post.likecount}}
+                </td>
+                <td>
+                    {{post.commentcount}}
+                </td>
+                <td>
+                    {{post.postdate}}
+                </td>
+                <td>
+                    {{post.creator.nickname}}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+    <h1 class="title has-text-warning has-text-weight-bold">NO POSTS YET</h1>
+
+    {% endif %}
+{% endblock %}

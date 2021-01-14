@@ -1,5 +1,6 @@
 from flask import Flask, render_template, current_app, request, redirect, url_for, flash
 from recipe import Recipe
+from post import Post
 from datetime import datetime
 from passlib.hash import pbkdf2_sha256 as hasher
 import user
@@ -26,28 +27,40 @@ def recipe_page(recipe_id):
     prev_vote = db.check_like_dislike(recipe_id, current_user.userid)
     return render_template("recipe.html", recipe = recipe, tried=tried, tools = tools, ingredients = ingredients, prev_vote = prev_vote)
 
-def discussions_page():
+def posts_page():
     db = current_app.config["db"]
     if request.method == "GET":
-        discussions = db.get_discussions()
-    return render_template("discussions.html", discussions = sorted(discussions))
+        posts = db.get_posts()
+        print(posts[0].title)
+    return render_template("forum_posts.html", posts = posts)
 
 
-def discussion_page(discussion_key):
-    db = current_app.config["db"]
-    discussion = db.get_discussion(discussion_key)
-    return render_template("discussion.html", discussion = discussion)
+def post_page(post_id):
+    if request.method == "GET":
+        db = current_app.config["db"]
+        post = db.get_post(post_id)
+        comments = db.get_post_comments(post_id)
+        return render_template("forum_post.html", post = post, comments = comments)
+    else:
+        db = current_app.config["db"]
+        comment = request.form["comment"]
+        db.create_comment(post_id, comment, current_user.userid)
+        db.update_post_commentcounts(post_id)
+        return redirect(url_for('post_page', post_id = post_id))
+
 
 @login_required
 def create_post_page():
     if request.method == "GET":
         return render_template("create_post.html")
     else:
+        db = current_app.config["db"]
         title = request.form["title"]
         content = request.form["content"]
-        print(title)
-        print(content)
-        return render_template("home.html")
+        user_id = current_user.userid
+        date = datetime.now()
+        db.create_post(content, title, user_id, date)
+        return redirect(url_for('home_page'))
 
 @login_required
 def create_recipe_page():

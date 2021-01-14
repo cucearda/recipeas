@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+{% block title %}Post{% endblock %}
+{% block content %}
+
+<article class="media">
+    
+    <div class="media-content">
+      <div class="content">
+        <p>
+          <strong>{{post.creator.nickname}}</strong>
+          <br>
+          {{post.content}}
+          <br>
+          <small><a>Like</a>· {{post.likecount}} · <a>Reply</a> · {{post.postdate}}</small>
+        </p>
+      </div>
+      <br>
+      {% for comment in comments%}
+      <article class="media">
+        <div class="media-content">
+          <div class="content">
+            <p>
+              <strong>{{comment.user.nickname}}</strong>
+              <br>
+                {{comment.content}}
+              <br>
+              <small><a>Like</a> · {{comment.likecount}} · </small>
+            </p>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </article>
+
+  <br>
+  <form action=""  method = "post" name ="comment">
+    <article class="media">
+      <div class="media-content">
+        <div class="field">
+          <p class="control">
+            <textarea class="textarea" name="comment" required="required" placeholder="Add a comment..."></textarea>
+          </p>
+        </div>
+        <div class="field is-grouped">
+          <p class="control">
+            <button class="button">Post comment</button>
+          </p>
+        </div>
+      </div>
+    </article>
+</form>
+  {% endblock %}

@@ -5,8 +5,6 @@ import psycopg2
 from database import Database
 from recipe import Recipe
 from comment import Comment
-from discussion import Discussion
-from ingredient import Ingredient
 import user
 from flask_login import LoginManager
 
@@ -24,8 +22,8 @@ def create_app():
     app.add_url_rule("/", view_func=view.home_page)
     app.add_url_rule("/recipes", view_func=view.recipes_page,  methods = ["GET", "POST"])
     app.add_url_rule("/recipes/<int:recipe_id>", view_func = view.recipe_page)
-    app.add_url_rule("/discussions", view_func= view.discussions_page)
-    app.add_url_rule("/discussion/<int:discussion_key>", view_func = view.discussion_page)
+    app.add_url_rule("/posts", view_func= view.posts_page)
+    app.add_url_rule("/post/<int:post_id>", view_func = view.post_page, methods = ["GET", "POST"])
     app.add_url_rule("/create_post", view_func= view.create_post_page, methods =["GET", "POST"])
     app.add_url_rule("/create_recipe", view_func = view.create_recipe_page, methods =["GET", "POST"])
     app.add_url_rule("/signup", view_func=view.signup_page, methods = ["POST","GET"])
@@ -54,4 +52,4 @@ if __name__ == "__main__":
     app = create_app()
     app.secret_key = 'super secret key'
     app.debug = True
-    app.run(host="0.0.0.0", port=8082, debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=True)

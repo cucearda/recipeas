@@ -1,6 +1,7 @@
 from recipe import Recipe
-from discussion import Discussion
 from ingredient import Ingredient
+from post import Post
+from comment import Comment
 import user
 import psycopg2
 import datetime
@@ -80,6 +81,61 @@ class Database:
             cur.execute("UPDATE recipes SET ingredientcount= %s WHERE id = %s", (ing_count ,recipe_id))
 
             conn.commit()
+
+    def create_post(self, body, title, user_id, date):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("INSERT INTO posts (content, title, user_id, likecount, commentcount, postdate) VALUES (%s, %s, %s, 0, 0, %s)", (body, title, user_id, date))        
+            conn.commit()
+    
+    def get_posts(self):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM posts ORDER BY id DESC")
+            posts_list = []
+            while True:
+                tup = cur.fetchone()
+                if tup == None:
+                    break
+                post = Post(tup[0], tup[1], tup[2], tup[3], tup[4], tup[5], tup[6])
+                posts_list.append(post)
+            return posts_list
+
+    def get_post(self, post_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM posts WHERE id = %s", (post_id,))
+            tup = cur.fetchone()
+            post = Post(tup[0], tup[1], tup[2], tup[3], tup[4], tup[5], tup[6])
+            return post
+
+    def get_post_comments(self, post_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM comments WHERE post_id = %s", (post_id,))
+            comments = []
+            while True:
+                tup = cur.fetchone()
+                if tup == None:
+                    break
+                comment = Comment(tup[0], tup[1], tup[2], tup[3], tup[4])
+                comments.append(comment)
+            return comments
+
+    def create_comment(self, post_id, content, user_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()        
+            cur.execute("INSERT INTO comments (content, user_id, post_id, likecount) VALUES (%s, %s, %s, %s)", (content, user_id, post_id, 0))
+            conn.commit()
+    
+    def update_post_commentcounts(self, post_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT COUNT(id) FROM comments WHERE post_id = %s", (post_id,))       
+            comment_count = cur.fetchone()[0]
+            cur.execute("UPDATE posts SET commentcount = %s WHERE id= %s", (comment_count, post_id))
+            conn.commit()
+
 
     def get_recipes(self):
         with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:

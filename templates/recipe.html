@@ -36,12 +36,12 @@
       <nav class="level is-mobile">
         <div class="level-left">
           <a class="level-item">
-            <a class="button {% if prev_vote == 1 %} is-light{% else %} is-success {% endif %}" href="{{ url_for('vote_recipe_page', recipe_id = recipe.recipe_id, vote_type = 1) }}">
+            <a class="button {% if prev_vote == 1 %} is-active{% endif %} is-success" href="{{ url_for('vote_recipe_page', recipe_id = recipe.recipe_id, vote_type = 1) }}">
                 Like
             </a>
           </a>
           <a class="level-item">
-            <a class="button {% if prev_vote == -1 %} is-light{% else %} is-danger {% endif %}" href="{{ url_for('vote_recipe_page', recipe_id = recipe.recipe_id, vote_type = 2) }}">
+            <a class="button {% if prev_vote == -1 %} is-active{% endif %} is-danger" href="{{ url_for('vote_recipe_page', recipe_id = recipe.recipe_id, vote_type = 2) }}">
                 Dislike
             </a>
           </a>
