@@ -31,7 +31,6 @@ def posts_page():
     db = current_app.config["db"]
     if request.method == "GET":
         posts = db.get_posts()
-        print(posts[0].title)
     return render_template("forum_posts.html", posts = posts)
 
 
@@ -126,8 +125,7 @@ def logout_page():
 
 def create_ingredient_page():
     if request.method == "GET":
-        return render_template("create_ingredient.html")
-    
+        return render_template("create_ingredient.html")    
     else:
         db = current_app.config["db"]
         entered_ingredient = request.form["ingredient"]
@@ -190,3 +188,52 @@ def vote_comment_page(post_id, comment_id, vote_type):
     db.update_comment_like_counts(comment_id)
     flash("Vote registered")
     return redirect(url_for('post_page', post_id = post_id))
+
+def search_recipe_page():
+    db = current_app.config["db"]
+    if request.method == "GET":
+        ingredients = db.get_ingredients()
+        return render_template("search_recipe.html", ingredients = ingredients)
+    else:
+        ingredient_ids = request.form.getlist('ingredient_ids')
+        if not ingredient_ids:
+            flash("Select some ingredients first!")
+            return redirect(url_for('search_recipe_page', ingredients = db.get_ingredients()))
+        else:
+            recipes = []
+            recipe_ids = db.get_recipe_ids_by_ingredients(ingredient_ids)
+            for recipe_id in recipe_ids:
+                recipe = db.get_recipe(recipe_id)
+                recipes.append(recipe)
+            return render_template("recipes.html", recipes=recipes)  
+
+def top_recipes_page():
+    db = current_app.config["db"]
+    top_recipes = db.get_top_recipes()
+    return render_template("recipes.html", recipes = top_recipes)
+
+def user_rankings_page():
+    db = current_app.config["db"]
+    users = db.get_users()
+    return render_template("users_rankings.html", users=users)
+
+def delete_user_page():
+    db = current_app.config["db"]
+    user_id = request.form["user_id"]
+    
+    voted_comments = db.get_voted_comments(user_id)
+    voted_posts = db.get_voted_posts(user_id)
+    
+    voted_recipes = set(db.get_voted_recipes(user_id))
+    tried_recipes = set(db.get_tried_recipes(user_id))
+    recipes_to_update = list(voted_recipes.union(tried_recipes))
+
+    for comment in voted_comments:
+        db.update_comment_like_counts(comment)
+    for post in voted_posts:
+        db.update_post_like_counts(post)
+    for recipe in recipes_to_update:
+        db.update_recipe_counts(recipe)
+
+
+    

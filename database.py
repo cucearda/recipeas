@@ -2,6 +2,7 @@ from recipe import Recipe
 from ingredient import Ingredient
 from post import Post
 from comment import Comment
+from mock_user import Mock_user
 import user
 import psycopg2
 import datetime
@@ -63,6 +64,7 @@ class Database:
             cur.execute("SELECT * FROM tools")
             tools = cur.fetchall()
         return tools
+        
 
     def create_recipe(self, body, title, ingredient_ids, tool_ids, current_user_id):
         with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
@@ -139,12 +141,19 @@ class Database:
     def vote_post(self, post_id, user_id, vote_type, prev_vote): # This removes, creates and updates votes all together
         with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
             cur = conn.cursor()
+            cur.execute("SELECT user_id FROM posts where id = %s", (post_id,)) # get the voted user's id
+            voted_user_id = cur.fetchone()[0]
+
             if prev_vote == 0:
                 cur.execute("INSERT INTO post_votes (vote_type, user_id, post_id) VALUES (%s, %s, %s)", (vote_type, user_id, post_id))
+                cur.execute("UPDATE users SET karma = karma + %s WHERE id = %s", (vote_type, voted_user_id)) # update voted users karma +1 or -1
             elif prev_vote == vote_type:
                 cur.execute("DELETE FROM post_votes WHERE vote_type = %s AND  user_id = %s AND post_id = %s", (vote_type, user_id, post_id))
+                cur.execute("UPDATE users SET karma = karma - %s WHERE id = %s", (vote_type, voted_user_id)) # karma - vote_type, since we are deleting the vote
             else:
                 cur.execute("UPDATE post_votes SET vote_type = %s WHERE user_id = %s AND post_id = %s", (vote_type, user_id, post_id))
+                cur.execute("UPDATE users SET karma = karma + 2 * %s WHERE id = %s", (vote_type, user_id)) # 2*vote_type since we are both deleting the opposite and inserting.
+            conn.commit()
 
     def check_post_like_dislike(self, post_id, user_id):
         with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
@@ -164,6 +173,7 @@ class Database:
             if like_count== None:
                 like_count = 0 
             cur.execute("UPDATE posts SET likecount = %s WHERE id = %s",(like_count, post_id))
+   
     def get_recipes(self):
         with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
             cur = conn.cursor()
@@ -200,7 +210,7 @@ class Database:
     def  get_recipe_ingredients(self, recipe_id):
         with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
             cur = conn.cursor()
-            cur.execute("SELECT ingredient_id FROM ingredient_mapper")
+            cur.execute("SELECT ingredient_id FROM ingredient_mapper WHERE recipe_id = %s", (recipe_id,))
             ingredient_ids = cur.fetchall()
             ingredients = []
             for ingredient_id in ingredient_ids:
@@ -211,7 +221,7 @@ class Database:
     def  get_recipe_tools(self, recipe_id):
         with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
             cur = conn.cursor()
-            cur.execute("SELECT tool_id FROM tool_mapper")
+            cur.execute("SELECT tool_id FROM tool_mapper  WHERE recipe_id = %s", (recipe_id,))
             tool_ids = cur.fetchall()
             tools = []
             for tool_id in tool_ids:
@@ -253,28 +263,41 @@ class Database:
     def vote_recipe(self, recipe_id, user_id, vote_type, prev_vote): # This removes, creates and updates votes all together
         with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
             cur = conn.cursor()
-
+            cur.execute("SELECT user_id FROM recipes where id = %s", (recipe_id,)) # get the voted user's id
+            voted_user_id = cur.fetchone()[0]
             if prev_vote == 0:
                 cur.execute("INSERT INTO recipe_votes (vote_type, user_id, recipe_id) VALUES (%s, %s, %s)", (vote_type, user_id, recipe_id))
-                conn.commit()
+                cur.execute("UPDATE users SET karma = karma + %s WHERE id = %s", (vote_type, voted_user_id)) # update voted users karma +1 or -1
+                
             elif prev_vote == vote_type:
                 cur.execute("DELETE FROM recipe_votes WHERE vote_type = %s AND user_id = %s AND recipe_id = %s", (vote_type, user_id, recipe_id))
-                conn.commit()
+                cur.execute("UPDATE users SET karma = karma - %s WHERE id = %s", (vote_type, voted_user_id)) # karma - vote_type, since we are deleting the vote
+                
             else:
                 cur.execute("UPDATE recipe_votes SET vote_type = %s WHERE user_id = %s AND recipe_id = %s", (vote_type, user_id, recipe_id))
-                conn.commit()
+                cur.execute("UPDATE users SET karma = karma + 2 * %s WHERE id = %s", (vote_type, user_id)) # 2*vote_type since we are both deleting the opposite and inserting.
+                
+            conn.commit()
+    
+    
     def vote_comment(self, comment_id, user_id, vote_type, prev_vote):
         with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
             cur = conn.cursor()
+            cur.execute("SELECT user_id FROM comments where id = %s", (comment_id,)) # get the voted user's id
+            voted_user_id = cur.fetchone()[0]            
+            
             if prev_vote == 0:
                 cur.execute("INSERT INTO comment_votes (vote_type, user_id, comment_id) VALUES (%s, %s, %s)", (vote_type, user_id, comment_id))
-                conn.commit()
+                cur.execute("UPDATE users SET karma = karma + %s WHERE id = %s", (vote_type, voted_user_id)) # update voted users karma +1 or -1
+                
             elif prev_vote == vote_type:
                 cur.execute("DELETE FROM comment_votes WHERE vote_type = %s AND user_id = %s AND comment_id = %s", (vote_type, user_id, comment_id))
-                conn.commit()
+                cur.execute("UPDATE users SET karma = karma - %s WHERE id = %s", (vote_type, voted_user_id)) # karma - vote_type, since we are deleting the vote            
             else:
                 cur.execute("UPDATE comment_votes SET vote_type = %s WHERE user_id = %s AND comment_id = %s", (vote_type, user_id, comment_id ))
-                conn.commit()
+                cur.execute("UPDATE users SET karma = karma + 2 * %s WHERE id = %s", (vote_type, user_id)) # 2*vote_type since we are both deleting the opposite and inserting.
+            
+            conn.commit()
                 
     def check_comment_like_dislike(self, comment_id, user_id):
         with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
@@ -294,3 +317,120 @@ class Database:
             if like_count== None:
                 like_count = 0 
             cur.execute("UPDATE comments SET likecount = %s WHERE id = %s",(like_count, comment_id))          
+
+
+    def get_recipe_ids_by_ingredients(self, ingredient_ids_list): # returns recipe_ids as a list of tuples
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            sql = ""
+            length = len(ingredient_ids_list)
+            for i in range(length):
+                if i != length - 1: # until we get to the last ingredient
+                    sql += """SELECT recipe_id FROM ingredient_mapper WHERE ingredient_id = {} 
+                    INTERSECT
+                    """.format(ingredient_ids_list[i])
+                else:
+                    sql += "SELECT recipe_id FROM ingredient_mapper WHERE ingredient_id = {};".format(ingredient_ids_list[i])
+
+            print(sql)
+            recipe_ids = []
+            cur.execute(sql)
+            while(True):
+                tup = cur.fetchone()
+                if tup == None:
+                    break
+                recipe_id = tup[0]
+                recipe_ids.append(recipe_id)
+            return recipe_ids
+
+    def get_top_recipes(self):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM recipes ORDER BY (likecount + triedcount) DESC")
+            recipes_list = []
+            for i in range(5):
+                tup = cur.fetchone()
+                if tup == None:
+                    break
+                recipe = Recipe(tup[0], tup[1], tup[2], tup[3], tup[4], tup[5], tup[6])
+                recipes_list.append(recipe)       
+            return recipes_list
+
+    def update_user_karma(self, user_id): # this is called on every user when a user gets deleted because trying to find which users get affected is more complicated
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            
+            cur.execute("SELECT SUM(likecount) FROM comments WHERE user_id = %s", (user_id,))
+            comment_karma = cur.fetchone()[0]
+            cur.execute("SELECT SUM(likecount) FROM posts WHERE user_id = %s", (user_id,))
+            post_karma = cur.fetchone()[0]
+            cur.execute("SELECT SUM(likecount) FROM recipes WHERE user_id = %s", (user_id,))
+            recipe_karma = cur.fetchone()[0]
+            
+            total_karma = comment_karma + post_karma + recipe_karma
+            cur.execute("UPDATE users SET karma = %s WHERE id = %s",(total_karma, user_id))
+            conn.commit()       
+
+
+    def get_voted_comments(self, user_id): # return list of comment ids user has voted
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT comment_id from comment_votes WHERE user_id = %s", (user_id,))
+            comment_ids = []
+            while True:
+                tup = cur.fetchone()
+                if tup == None:
+                    break
+                comment_ids.append[0]
+            return comment_ids
+    
+    def get_voted_recipes(self, user_id): # return list of recipe ids user has voted
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT recipe_id from recipe_votes WHERE user_id = %s", (user_id,))
+            recipe_ids = []
+            while True:
+                tup = cur.fetchone()
+                if tup == None:
+                    break
+                recipe_ids.append[0]
+            return recipe_ids
+    
+    def get_voted_posts(self, user_id): # return list of post ids user has voted
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT post_id FROM post_votes WHERE user_id = %s", (user_id,))
+            post_ids = []
+            while True:
+                tup = cur.fetchone()
+                if tup == None:
+                    break
+                post_ids.append[0]
+            return post_ids    
+    
+    def get_tried_recipes(self, user_id): # return list of recipes ids user has marked tried
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT recipe_id FROM tried WHERE user_id = %s", (user_id,))
+            recipe_ids = []
+            while True:
+                tup = cur.fetchone()
+                if tup == None:
+                    break
+                recipe_ids.append[0]
+            return recipe_ids
+    
+    def get_users(self):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+
+            cur.execute("SELECT * FROM users ORDER BY karma DESC")
+            users = []
+            while True:
+                tup = cur.fetchone()
+                if tup == None:
+                    break
+                user = Mock_user(tup[0], tup[3], tup[4], tup[5])
+                users.append(user)
+                
+            return users
