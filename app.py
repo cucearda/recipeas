@@ -37,7 +37,7 @@ def create_app():
     app.add_url_rule("/post/<int:comment_id>+<int:post_id>/<int:vote_type>", view_func=view.vote_comment_page)
     app.add_url_rule("/search_recipe", view_func=view.search_recipe_page, methods = ["POST", "GET"])
     app.add_url_rule("/top_recipes", view_func=view.top_recipes_page)
-    app.add_url_rule("/user_rankings", view_func=view.user_rankings_page)
+    app.add_url_rule("/user_rankings", view_func=view.user_rankings_page, methods = ["POST", "GET"])
     db = Database()
     app.config["db"] = db
 
@@ -56,4 +56,4 @@ if __name__ == "__main__":
     app = create_app()
     app.secret_key = 'super secret key'
     app.debug = True
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    app.run(host="0.0.0.0", port=8081, debug=True)

@@ -90,7 +90,7 @@ def signup_page():
         hashed = hasher.hash(password)
         karma = 0
         date = datetime.now()
-        if(db.add_user(username, hashed, nickname, karma, date)):
+        if(db.add_user(username, hashed, nickname, karma, date, False)):
             flash("Registired")
             return redirect(url_for('login_page'))
         else:
@@ -213,27 +213,46 @@ def top_recipes_page():
     return render_template("recipes.html", recipes = top_recipes)
 
 def user_rankings_page():
-    db = current_app.config["db"]
-    users = db.get_users()
-    return render_template("users_rankings.html", users=users)
+    if request.method == "GET":
+        db = current_app.config["db"]
+        users = db.get_users()
+        return render_template("users_rankings.html", users=users)
+    else:
+        db = current_app.config["db"]
+        user_ids = request.form.getlist("user_ids")
+        for user_id in user_ids:
+            
+            voted_comments = db.get_voted_comments(user_id) # returns ids not objects.
+            voted_posts = db.get_voted_posts(user_id)
+            recipes_to_update = db.get_altered_recipes(user_id) #  returns recipe_ids of both tried and voted recipes
+            
+            # which users karmas should be updated, are calculated before deletion.
+            voted_comment_owners = []
+            voted_recipe_owners = []
+            voted_post_owners = []
+             
+            for comment_id in voted_comments:
+                voted_comment_owners.append(db.get_comment_owner_id(comment_id))
+            for recipe_id in recipes_to_update:
+                voted_recipe_owners.append(db.get_recipe_owner_id(recipe_id))
+            for post_id in voted_posts:
+                voted_post_owners.append(db.get_post_owner_id(post_id))
 
-def delete_user_page():
-    db = current_app.config["db"]
-    user_id = request.form["user_id"]
-    
-    voted_comments = db.get_voted_comments(user_id)
-    voted_posts = db.get_voted_posts(user_id)
-    
-    voted_recipes = set(db.get_voted_recipes(user_id))
-    tried_recipes = set(db.get_tried_recipes(user_id))
-    recipes_to_update = list(voted_recipes.union(tried_recipes))
+            comment_under_post_owners = db.get_comment_owners_of_users_posts(user_id) # if a user commented under any post of user to be deleted, commenters karma may need to be updated
 
-    for comment in voted_comments:
-        db.update_comment_like_counts(comment)
-    for post in voted_posts:
-        db.update_post_like_counts(post)
-    for recipe in recipes_to_update:
-        db.update_recipe_counts(recipe)
+            users_to_update = list(set(voted_comment_owners).union(set(voted_recipe_owners), set(voted_post_owners), set(comment_under_post_owners)))
 
+            # deletion of user, it cascades and deletes all votes, posts and comments of user.
+            db.delete_user(user_id)
 
-    
+            for comment in voted_comments: # update the like and tried counts of the objects user has altered.
+                db.update_comment_like_counts(comment)
+            for post in voted_posts:
+                db.update_post_like_counts(post)
+            for recipe in recipes_to_update:
+                db.update_recipe_counts(recipe)
+
+            for user_id in users_to_update:
+                db.update_user_karma(user_id)
+
+        return  redirect(url_for('user_rankings_page'))  

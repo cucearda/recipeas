@@ -11,11 +11,11 @@ class Database:
     def __init__(self):
         pass
 
-    def add_user(self, username, hashed, nickname, karma, date):
+    def add_user(self, username, hashed, nickname, karma, date, is_admin):
         with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
             cur = conn.cursor()
             if( not user.get_user(username) ):
-                cur.execute("INSERT INTO users (username, password, nickname, register_date, karma) VALUES (%s, %s, %s, %s, %s)", (username, hashed, nickname, date, karma))
+                cur.execute("INSERT INTO users (username, password, nickname, register_date, karma, is_admin) VALUES (%s, %s, %s, %s, %s, %s)", (username, hashed, nickname, date, karma, is_admin))
                 conn.commit()
                 return True
             else:
@@ -362,10 +362,16 @@ class Database:
             
             cur.execute("SELECT SUM(likecount) FROM comments WHERE user_id = %s", (user_id,))
             comment_karma = cur.fetchone()[0]
+            if comment_karma == None:
+                comment_karma = 0
             cur.execute("SELECT SUM(likecount) FROM posts WHERE user_id = %s", (user_id,))
             post_karma = cur.fetchone()[0]
+            if post_karma == None:
+                post_karma = 0
             cur.execute("SELECT SUM(likecount) FROM recipes WHERE user_id = %s", (user_id,))
             recipe_karma = cur.fetchone()[0]
+            if recipe_karma == None:
+                recipe_karma = 0
             
             total_karma = comment_karma + post_karma + recipe_karma
             cur.execute("UPDATE users SET karma = %s WHERE id = %s",(total_karma, user_id))
@@ -381,19 +387,25 @@ class Database:
                 tup = cur.fetchone()
                 if tup == None:
                     break
-                comment_ids.append[0]
+                comment_ids.append(tup[0])
             return comment_ids
     
-    def get_voted_recipes(self, user_id): # return list of recipe ids user has voted
+    def get_altered_recipes(self, user_id): # return list of recipe ids user has voted
         with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
             cur = conn.cursor()
-            cur.execute("SELECT recipe_id from recipe_votes WHERE user_id = %s", (user_id,))
+            cur.execute("""SELECT recipe_id
+                            FROM recipe_votes
+                            WHERE  user_id = %s
+                            UNION
+                            SELECT recipe_id
+                            FROM tried
+                            WHERE user_id = %s""", (user_id, user_id))
             recipe_ids = []
             while True:
                 tup = cur.fetchone()
                 if tup == None:
                     break
-                recipe_ids.append[0]
+                recipe_ids.append(tup[0])
             return recipe_ids
     
     def get_voted_posts(self, user_id): # return list of post ids user has voted
@@ -405,20 +417,9 @@ class Database:
                 tup = cur.fetchone()
                 if tup == None:
                     break
-                post_ids.append[0]
+                post_ids.append(tup[0])
             return post_ids    
     
-    def get_tried_recipes(self, user_id): # return list of recipes ids user has marked tried
-        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
-            cur = conn.cursor()
-            cur.execute("SELECT recipe_id FROM tried WHERE user_id = %s", (user_id,))
-            recipe_ids = []
-            while True:
-                tup = cur.fetchone()
-                if tup == None:
-                    break
-                recipe_ids.append[0]
-            return recipe_ids
     
     def get_users(self):
         with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
@@ -434,3 +435,44 @@ class Database:
                 users.append(user)
                 
             return users
+    
+    def get_comment_owner_id(self, comment_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+
+            cur.execute("SELECT user_id FROM comments WHERE id = %s", (comment_id,))
+            return cur.fetchone()[0]
+    
+    def get_recipe_owner_id(self, recipe_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+
+            cur.execute("SELECT user_id FROM recipes WHERE id = %s", (recipe_id,))
+            return cur.fetchone()[0]     
+    
+    def get_post_owner_id(self, post_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+
+            cur.execute("SELECT user_id FROM posts WHERE id = %s", (post_id,))
+            return cur.fetchone()[0]
+
+    def get_comment_owners_of_users_posts(self, user_id): # returns owners of comments under a certain users posts, sorry for the ridiculosly long function names
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute(""" select c.user_id
+                            from comments as c, posts as p
+                            where p.user_id = %s and (p.id = c.post_id)""", (user_id,))
+            user_ids = []
+            while True:
+                tup = cur.fetchone()
+                if tup == None:
+                    break
+                user_ids.append(tup[0])
+            return user_ids 
+
+    def delete_user(self, user_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
+            conn.commit()        
