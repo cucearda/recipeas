@@ -48,7 +48,6 @@ lm.login_view = "login_page"
 
 
 if __name__ == "__main__":
-    app = create_app()
     app.secret_key = 'super secret key'
     app.debug = True
     app.run(host="0.0.0.0", port=8081, debug=True)
