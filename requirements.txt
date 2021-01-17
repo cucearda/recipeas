@@ -10,7 +10,6 @@ lazy-object-proxy==1.4.3
 MarkupSafe==1.1.1
 mccabe==0.6.1
 passlib==1.7.4
-pkg-resources==0.0.0
 psycopg2-binary==2.8.6
 pylint==2.6.0
 six==1.15.0
