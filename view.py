@@ -247,9 +247,6 @@ def user_rankings_page():
         users_augmented = [ (user, db.get_user_post_counts(user.userid), db.get_user_recipe_counts(user.userid)) for user in users ]
 
         return render_template("users_rankings.html", users_augmented=users_augmented)
-    
-    
-    
     else:
         db = current_app.config["db"]
         user_ids = request.form.getlist("user_ids")
@@ -282,6 +279,7 @@ def user_rankings_page():
                 db.update_comment_like_counts(comment)
             for post in voted_posts:
                 db.update_post_like_counts(post)
+                db.update_post_commentcounts(post)
             for recipe in recipes_to_update:
                 db.update_recipe_counts(recipe)
 

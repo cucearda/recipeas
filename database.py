@@ -331,8 +331,6 @@ class Database:
                     """.format(ingredient_ids_list[i])
                 else:
                     sql += "SELECT recipe_id FROM ingredient_mapper WHERE ingredient_id = {};".format(ingredient_ids_list[i])
-
-            print(sql)
             recipe_ids = []
             cur.execute(sql)
             while(True):
