@@ -9,6 +9,7 @@ import user
 from flask_login import LoginManager
 
 
+app = Flask(__name__)
 
 lm = LoginManager()
 
@@ -16,7 +17,7 @@ lm = LoginManager()
 def load_user(username):
     return user.get_user(username)
 
-app = Flask(__name__)
+
 app.add_url_rule("/", view_func=view.home_page)
 app.add_url_rule("/recipes", view_func=view.recipes_page,  methods = ["GET", "POST"])
 app.add_url_rule("/recipes/<int:recipe_id>", view_func = view.recipe_page)
