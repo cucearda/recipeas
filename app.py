@@ -46,8 +46,9 @@ lm.init_app(app)
 lm.login_view = "login_page"
 
 
-
-
 app.secret_key = 'super secret key'
-app.debug = True
-app.run(threaded=True)
+
+if __name__ == "__main__":
+
+    app.debug = True
+    app.run(threaded=True)
