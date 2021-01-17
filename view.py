@@ -16,6 +16,11 @@ def recipes_page():
     db = current_app.config["db"]
     if request.method == "GET":
         recipes = db.get_recipes()
+    else:
+        recipe_ids = request.form.getlist("recipe_ids")
+        for recipe_id in recipe_ids:
+            db.delete_recipe(recipe_id)
+            recipes = db.get_recipes()
     return render_template("recipes.html", recipes=recipes)  
 
 def recipe_page(recipe_id):
@@ -27,11 +32,27 @@ def recipe_page(recipe_id):
     prev_vote = db.check_recipe_like_dislike(recipe_id, current_user.userid)
     return render_template("recipe.html", recipe = recipe, tried=tried, tools = tools, ingredients = ingredients, prev_vote = prev_vote)
 
-def posts_page():
+def posts_page(): # commenterların karmasını güncelleme şeklini değiştir !
     db = current_app.config["db"]
     if request.method == "GET":
         posts = db.get_posts()
-    return render_template("forum_posts.html", posts = posts)
+        return render_template("forum_posts.html", posts = posts)
+    
+    else:
+        post_ids = request.form.getlist("post_ids")
+        for post_id in post_ids:
+            commented_user_ids = []
+            for comment in db.get_post_comments(post_id):
+                commented_user_ids.append(comment.user.userid)
+
+            db.update_post_owner(post_id) # update post owners karma (before deletion so we can access like count)
+            db.delete_post(post_id)
+            for user_id in commented_user_ids: # update commenters karma after deletion
+                db.update_user_karma(user_id)
+            
+        posts = db.get_posts()
+        return render_template("forum_posts.html", posts = posts)
+
 
 
 def post_page(post_id):
@@ -209,14 +230,26 @@ def search_recipe_page():
 
 def top_recipes_page():
     db = current_app.config["db"]
-    top_recipes = db.get_top_recipes()
-    return render_template("recipes.html", recipes = top_recipes)
+    if request.method == "GET":
+        recipes = db.get_top_recipes()
+    else:
+        recipe_ids = request.form.getlist("recipe_ids")
+        for recipe_id in recipe_ids:
+            db.delete_recipe(recipe_id)
+            recipes = db.get_top_recipes()
+    return render_template("recipes.html", recipes=recipes)  
 
 def user_rankings_page():
     if request.method == "GET":
         db = current_app.config["db"]
         users = db.get_users()
-        return render_template("users_rankings.html", users=users)
+    
+        users_augmented = [ (user, db.get_user_post_counts(user.userid), db.get_user_recipe_counts(user.userid)) for user in users ]
+
+        return render_template("users_rankings.html", users_augmented=users_augmented)
+    
+    
+    
     else:
         db = current_app.config["db"]
         user_ids = request.form.getlist("user_ids")
@@ -240,7 +273,7 @@ def user_rankings_page():
 
             comment_under_post_owners = db.get_comment_owners_of_users_posts(user_id) # if a user commented under any post of user to be deleted, commenters karma may need to be updated
 
-            users_to_update = list(set(voted_comment_owners).union(set(voted_recipe_owners), set(voted_post_owners), set(comment_under_post_owners)))
+            users_to_update = list(set(voted_comment_owners).union(set(voted_recipe_owners), set(voted_post_owners), set(comment_under_post_owners))) # we are selecting comment owners etc. from a list of comment ids, so doing the selection and  union in one query became too complicated
 
             # deletion of user, it cascades and deletes all votes, posts and comments of user.
             db.delete_user(user_id)
@@ -255,4 +288,9 @@ def user_rankings_page():
             for user_id in users_to_update:
                 db.update_user_karma(user_id)
 
-        return  redirect(url_for('user_rankings_page'))  
+        return  redirect(url_for('user_rankings_page'))
+
+def delete_comment_page(post_id, comment_id):
+    db = current_app.config["db"]
+    db.delete_comment(comment_id) # both deletes comment and updates user karma
+    return redirect(url_for('post_page', post_id = post_id))

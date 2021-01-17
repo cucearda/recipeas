@@ -31,6 +31,11 @@
             </p>
           </div>
         </div>
+        {%if current_user.is_admin %}
+        <div class="media-right">
+          <small><a href="{{url_for('delete_comment_page', post_id = post.post_id, comment_id = comment.id)}}">X</a></small>
+        </div>
+        {%endif%}
       </article>
       {% endfor %}
     </div>

@@ -2,31 +2,39 @@
 {% block title %}Users{% endblock %}
 
 {% block content %}
-    {% if users %}
+    {% if users_augmented %}
     <form action="" method = "post" name="user_list">
         <table class="table is-striped is-fullwidth">
             <thead>
                 <tr>
-                    <th><abbr title="Nickname">Nickname</abbr></th>
-                    <th><abbr title="Karma">Karma</abbr></th>
-                    <th><abbr title="Join Date">Join Date</abbr></th>
+                    <th>Nickname</th>
+                    <th>Karma</th>
+                    <th>Created Posts</th>
+                    <th>Created Recipes</th>
+                    <th>Join Date</th>
                 </tr>
             </thead>
-            {% for user in users%}
+            {% for user in users_augmented%}
             <tr>
                 <td>
-                    {{user.nickname}}
+                    {{user[0].nickname}}
                 </td>
                 <td>
-                    {{user.karma}}
+                    {{user[0].karma}}
                 </td>
                 <td>
-                    {{user.join_date}}
+                    {{user[1]}}
+                </td>
+                <td>
+                    {{user[2]}}
+                </td>
+                <td>
+                    {{user[0].join_date}}
                 </td>
                 {%if current_user.is_admin%}
                 <td>
                     <label class="checkbox">
-                        <input type="checkbox" name="user_ids" value = {{user.userid}} >
+                        <input type="checkbox" name="user_ids" value = {{user[0].userid}} >
                     </label>
                 </td>
                 {%endif%}

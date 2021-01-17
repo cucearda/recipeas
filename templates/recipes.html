@@ -3,6 +3,7 @@
 
 {% block content %}
     {% if recipes%}
+    <form action="" method = "post" name = "post_list">
         <table class="table is-striped is-fullwidth">
             <thead>
                 <tr>
@@ -32,9 +33,24 @@
                 <td>
                     {{recipe.creator.nickname}}
                 </td>
+                {%if current_user.is_admin%}
+                <td>
+                    <label class="checkbox">
+                        <input type="checkbox" name="recipe_ids" value = {{recipe.recipe_id}} >
+                    </label>
+                </td>
+                {%endif%}
             </tr>
             {% endfor %}
         </table>
+        {%if current_user.is_admin%}
+        <div class="field is-grouped">
+            <div class="control">
+              <button class="button is-danger">Delete Recipes</button>
+            </div>
+        </div>
+        {%endif%}
+    </form>
     {% else %}
     <h1 class="title has-text-warning has-text-weight-bold">NO RECIPEAS YET</h1>
 

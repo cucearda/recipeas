@@ -476,3 +476,69 @@ class Database:
             cur = conn.cursor()
             cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
             conn.commit()        
+
+    def update_post_owner(self,post_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("""UPDATE users u
+                            SET karma = karma - p.likecount
+                            from posts p
+                            Where p.id = %s and (u.id = p.user_id)""",(post_id,))
+
+    def delete_post(self,post_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM posts WHERE id = %s", (post_id,))
+            conn.commit()
+
+    def delete_comment(self,comment_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("""UPDATE users u
+                            SET karma = karma - c.likecount
+                            FROM comments c
+                            WHERE c.id = %s and (u.id = c.user_id)""",(comment_id,))
+            cur.execute("DELETE FROM comments WHERE id = %s", (comment_id,))
+            conn.commit()
+
+    def delete_recipe(self,recipe_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("""UPDATE users u
+                            SET karma = karma - r.likecount
+                            FROM recipes r
+                            WHERE r.id = %s and (u.id = r.user_id)""",(recipe_id,))
+            cur.execute("DELETE FROM recipes WHERE id = %s", (recipe_id,))
+            conn.commit()        
+
+    def get_user_post_counts(self, user_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("""SELECT post_counts.p, post_counts.user_id FROM	
+                                (SELECT COUNT(id) as p, user_id
+                                FROM posts
+                                GROUP BY user_id
+                                ) as post_counts
+                            WHERE user_id = %s""", (user_id,))
+            tup = cur.fetchone()
+            if tup == None:
+                return 0
+            else:
+                return tup[0]
+
+            
+    
+    def get_user_recipe_counts(self, user_id):
+        with psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda") as conn:
+            cur = conn.cursor()
+            cur.execute("""SELECT recipe_counts.r, recipe_counts.user_id FROM	
+                                    (SELECT COUNT(id) as r, user_id
+                                    FROM recipes
+                                    GROUP BY user_id
+                                    ) as recipe_counts
+                                WHERE user_id = %s""", (user_id,))        
+            tup = cur.fetchone()
+            if tup == None:
+                return 0
+            else:
+                return tup[0]
