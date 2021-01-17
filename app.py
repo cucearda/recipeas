@@ -50,4 +50,4 @@ lm.login_view = "login_page"
 if __name__ == "__main__":
     app.secret_key = 'super secret key'
     app.debug = True
-    app.run(host="0.0.0.0", port=8081, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True, threaded=True)
