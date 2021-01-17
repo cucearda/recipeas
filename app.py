@@ -50,4 +50,4 @@ lm.login_view = "login_page"
 if __name__ == "__main__":
     app.secret_key = 'super secret key'
     app.debug = True
-    app.run(host="0.0.0.0", port=5000, debug=True, threaded=True)
+    app.run(host="postgres://kprnxybxdytkuu:f56741243007919d8d588187efb46cd474dfdc9502050a79b62efe23376284d3@ec2-18-208-49-190.compute-1.amazonaws.com:5432/d947mekkhcn8bj", port=5000, debug=True, threaded=True)
