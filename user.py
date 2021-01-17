@@ -1,7 +1,7 @@
 from flask import current_app
 from flask_login import UserMixin
 import psycopg2
-
+import dbcredentials as cred
 class User(UserMixin):
     def __init__(self, userid, username, password, nickname, date, karma, is_admin):
         self.userid = userid
@@ -21,7 +21,7 @@ class User(UserMixin):
         return self.active
 
 def get_user(user_name):
-    conn = psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda")
+    conn = psycopg2.connect(dbname= cred.dbname, user=cred.user, host=cred.host, password= cred.password)
     cur = conn.cursor()
     cur.execute("""SELECT * FROM  users 
                 WHERE username= (%s)""", (user_name,))
@@ -36,7 +36,7 @@ def get_user(user_name):
     
     return user
 def get_user_by_id(user_id):
-    conn = psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda")
+    conn = psycopg2.connect(dbname= cred.dbname, user=cred.user, host=cred.host, password= cred.password)
     cur = conn.cursor()
     cur.execute("""SELECT * FROM  users 
                 WHERE id= (%s)""", (user_id,))
