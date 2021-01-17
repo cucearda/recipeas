@@ -10,8 +10,6 @@ from flask_login import LoginManager
 
 
 def create_app():
-    conn = psycopg2.connect(dbname= "recipeas2", user="postgres", host='localhost', password= "arda")
-    cur = conn.cursor()
     lm = LoginManager()
 
     @lm.user_loader
@@ -47,8 +45,6 @@ def create_app():
     lm.login_view = "login_page"
 
 
-    cur.close()
-    conn.close()
     
     return app
 
