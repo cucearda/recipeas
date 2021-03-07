@@ -1,1 +1,1 @@
-# Recipeas is a website created for Database Management Systems class. Web develeopment tools such as Flask, Bulma were used to implement the project, no ORMs were used for data manipulation. The site can be accessed via https://reciipeas.herokuapp.com/
+Recipeas is a website created for Database Management Systems class. Web develeopment tools such as Flask, Bulma and PostgreSQL database were used to implement the project, no ORMs were used. The site can be accessed via https://reciipeas.herokuapp.com/
